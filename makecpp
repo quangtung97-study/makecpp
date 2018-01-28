@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# check for parameter
+if (($# < 1)); then 
+    echo "Need name of directory as argument"
+    exit 1
+fi
+
+BIN_PATH="$(dirname "$0")"
+mkdir "$1"
+cd "$1"
+
+# main CMakeLists.txt
+cp -r "$BIN_PATH/makecpp-files/"* .
+sed -i "s/__placeholder/$1/g" CMakeLists.txt
+
+mkdir build
+cd build
+cmake ..
+make
