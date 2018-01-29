@@ -1,0 +1,81 @@
+#!/bin/bash
+
+BIN_PATH="$(dirname "$0")"
+
+if (($# < 1)); then 
+    exit 1
+fi
+
+IFS='.'
+read -r -a array <<< "$1"
+length=${#array[@]}
+class_name=${array[$length - 1]}
+packages=("${array[@]:0:$length - 1}")
+
+file_path="$(echo "$1" | sed 's/\./\//g')"
+source_path="src/$file_path.cpp"
+header_path="include/$file_path.hpp"
+test_path="tests/${file_path}Test.cpp"
+
+create_namespaces() {
+    sed_code=""
+    for package in "${packages[@]}"; do
+        sed_code="${sed_code}namespace $package {\n"
+    done
+
+    sed -i "s/\/\/__placeholder_name_begin/$sed_code/g" "$sed_path"
+
+    sed_code=""
+    for ((i = ${#packages[@]} - 1; i >= 0; i--)); do
+        sed_code="${sed_code}} \/\/ namespace ${packages[$i]}\n"
+    done
+
+    sed -i "s/\/\/__placeholder_name_end/$sed_code/g" "$sed_path"
+}
+
+edit_ifndef() {
+    sed_code=""
+    for package in "${packages[@]}"; do 
+        uppercase="$(echo "$package" | tr /a-z/ /A-Z/)"
+        sed_code="${sed_code}${uppercase}_"
+    done
+    sed -i "s/__PLACEHOLDER_NAME/$sed_code/g" "$sed_path"
+}
+
+edit_include_path() {
+    modified_file_path="$(echo "$file_path" | sed 's/\//\\\//g')"
+    sed -i "s/__placeholder_path/${modified_file_path}\.hpp/g" "$sed_path"
+}
+
+edit_class_name() {
+    sed -i "s/__placeholder_class/"$class_name"/g" "$sed_path"
+
+    uppercase="$(echo "$class_name" | tr /a-z/ /A-Z/)"
+    sed -i "s/__PLACEHOLDER_CLASS/"$uppercase"/g" "$sed_path"
+}
+
+# for header
+mkdir -p $(dirname "$header_path")
+cp "$BIN_PATH/cppclass-files/header.hpp" "$header_path"
+sed_path="$header_path"
+
+create_namespaces
+edit_ifndef
+edit_class_name
+
+# for source
+mkdir -p $(dirname "$source_path")
+cp "$BIN_PATH/cppclass-files/source.cpp" "$source_path"
+sed_path="$source_path"
+
+create_namespaces
+edit_include_path
+
+# for test
+mkdir -p $(dirname "$test_path")
+cp "$BIN_PATH/cppclass-files/test.cpp" "$test_path"
+sed_path="$test_path"
+
+create_namespaces
+edit_include_path
+edit_class_name
