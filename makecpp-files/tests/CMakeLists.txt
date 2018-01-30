@@ -1,5 +1,7 @@
 project(tests)
 
+link_directories(../lib/test)
+
 add_executable(test_main 
     test_example.cpp
 )
