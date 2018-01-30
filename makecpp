@@ -11,10 +11,12 @@ mkdir "$1"
 cd "$1"
 
 # main CMakeLists.txt
-cp -r "$BIN_PATH/makecpp-files/"* .
+cp -r "$BIN_PATH/makecpp-files/". .
 sed -i "s/__placeholder/$1/g" CMakeLists.txt
 
+mv gitignore '.gitignore'
+git init
 mkdir build
 cd build
 cmake ..
-make
+make -j4
