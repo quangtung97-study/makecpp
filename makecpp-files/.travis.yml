@@ -7,11 +7,11 @@ addons:
         sources:
             - ubuntu-toolchain-r-test
         packages:
-            - g++-5
+            - g++-7
 
 script:
-    - CXX=/usr/bin/g++-5
-    - CC=/usr/bin/gcc-5
+    - CXX=/usr/bin/g++-7
+    - CC=/usr/bin/gcc-7
     - ./build_google_mock.sh
     - mkdir build
     - cd build
